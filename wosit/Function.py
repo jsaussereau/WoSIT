@@ -1,26 +1,38 @@
 from multiprocessing import Queue
+from queue import Empty
 
 
 class Variable:
     __value = None
     __queue = None
 
+    # The queue carries the values set in the processes running the tasks.
+    # A put only reaches it a moment later, so the value set here is also kept here.
     def __init__(self, init_value=None):
-        self.__queue = Queue(maxsize=1)
-        if not init_value is None:
-            self.__value = init_value
-            self.__queue.put(init_value)
+        self.__queue = Queue()
+        self.__value = init_value
 
 
+    def __drain(self):
+        drained = False
+        while True:
+            try:
+                self.__value = self.__queue.get_nowait()
+                drained = True
+            except Empty:
+                return drained
+
+
+    # What a process reads stays for the others
     def get(self):
-        if not self.__queue.empty():
-            self.__value = self.__queue.get()
+        if self.__drain():
+            self.__queue.put(self.__value)
         return self.__value
     
 
     def set(self, value):
-        if not self.__queue.empty():
-            self.__queue.get()
+        self.__drain()
+        self.__value = value
         self.__queue.put(value)
 
 
