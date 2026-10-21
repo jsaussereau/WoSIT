@@ -98,7 +98,7 @@ class Maker:
 
         for t in target:
             if "%" in t:
-                patterns_list = self.__getTargetsList(self.__patterns)
+                patterns_list = [p["pattern"] for p in self.__patterns]
                 if t in patterns_list:
                     raise ValueError(f"Pattern \"{t}\" is already defined.")
                 self.__patterns.append({"pattern":t, "sources":source, "command":command, "on_failure_command":on_failure_command, "path":path, "phony":phony})
