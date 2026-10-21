@@ -96,3 +96,13 @@ addRule(
 ### More Examples
 
 More examples are available in the `examples` folder of this repository.
+
+## Automated Tests
+
+You can run the regression test suite with `pytest`.
+
+```bash
+python -m pip install -e .
+python -m pip install pytest
+pytest
+```
