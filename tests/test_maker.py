@@ -122,7 +122,26 @@ def test_the_same_file_spelled_differently_is_the_same_target(in_tmp):
     assert _edges(maker, "./app") == {"app": ["a.o", "obj/b.o"], "a.o": [], "obj/b.o": []}
 
 
-def test_a_source_without_rule_must_be_a_file(in_tmp):
+def test_a_directory_target_is_up_to_date_once_built(in_tmp):
+    (in_tmp / "design.v").write_text("module m; endmodule")
+    maker = Maker()
+    maker.addRule("run", "design.v", "mkdir -p run && cp design.v run/")
+
+    assert maker.getGraph("run")[0]["need_update"] is True
+    maker.execute("run")
+    age(in_tmp / "design.v")
+    assert maker.getGraph("run")[0]["need_update"] is False
+
+
+def test_a_source_without_rule_can_be_a_directory(in_tmp):
+    (in_tmp / "rtl").mkdir()
+    maker = Maker()
+    maker.addRule("all", "rtl", "true")
+
+    assert [node["target"] for node in maker.getGraph("all").values()] == ["all"]
+
+
+def test_a_source_without_rule_must_exist(in_tmp):
     maker = Maker()
     maker.addRule("all", "missing.c", "true")
 

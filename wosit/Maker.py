@@ -297,7 +297,7 @@ class Maker:
         rule = self.__getRule(name)
         if rule is None:
             if not type(name) is Variable:
-                if not os.path.isfile(name):
+                if not os.path.exists(name):
                     raise ValueError(f"Could not find rule or dependency \"{name}\".")
             
             tok = None

@@ -13,7 +13,7 @@ class Token:
         self.__phony = phony
 
         if type(object) is str:
-            if os.path.isfile(object):
+            if os.path.exists(object):
                 self.__type = "file"
         else:
             self.__type = None
@@ -33,7 +33,7 @@ class Token:
             return None
         if type(obj) is Variable:
             return None
-        if not os.path.isfile(obj):
+        if not os.path.exists(obj):
             return None
         
         return os.path.getmtime(obj)

@@ -23,10 +23,16 @@ def test_a_token_gives_the_date_of_its_file(tmp_path):
 @pytest.mark.parametrize("token", [
     lambda tmp: Token(str(tmp / "missing.txt")),
     lambda tmp: Token(Variable("value")),
-    lambda tmp: Token(str(tmp), phony=False),  # a directory is not a file
 ])
-def test_a_token_has_no_date_when_it_is_not_a_file(tmp_path, token):
+def test_a_token_has_no_date_when_there_is_nothing_to_date(tmp_path, token):
     assert token(tmp_path).getmtime() is None
+
+
+def test_a_token_gives_the_date_of_its_directory(tmp_path):
+    directory = tmp_path / "run"
+    directory.mkdir()
+
+    assert Token(str(directory)).getmtime() == directory.stat().st_mtime
 
 
 def test_a_phony_token_has_no_date_even_if_the_file_exists(tmp_path):
