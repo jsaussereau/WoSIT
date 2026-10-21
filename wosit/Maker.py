@@ -343,6 +343,31 @@ class Maker:
         
         return stages
 
+    # Returns {id: node} for every task the target depends on, with the ids of
+    # the tasks it waits for in "sources"
+    def getGraph(self, name=None):
+        if name is None:
+            name = "all"
+
+        graph = {}
+        cache = {}
+        pending = [self.__buildTaskGraph(name)]
+        while pending:
+            task = pending.pop()
+            if type(task) is not Task or task.getId() in graph:
+                continue
+            sources = [s for s in task.getSources() if type(s) is Task]
+            graph[task.getId()] = {
+                "target": task.getName(),
+                "command": task.getCommand(),
+                "on_failure_command": task.getOnFailureCommand(),
+                "path": task.getPath(),
+                "sources": [s.getId() for s in sources],
+                "need_update": task.needsUpdate(cache),
+            }
+            pending.extend(sources)
+        return graph
+
     def execute(self, name=None, max_process=1):
 
         stages = self.getStages(name, max_process)

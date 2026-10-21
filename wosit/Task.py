@@ -65,6 +65,18 @@ class Task:
         return self.__command
 
 
+    def getOnFailureCommand(self):
+        return self.__on_failure_command
+
+
+    def getPath(self):
+        return self.__path
+
+
+    def getSources(self):
+        return self.__sources or []
+
+
     def __addStage(self, stages, level, obj):
         if level in list(stages.keys()):
             stages[level].append(obj)
@@ -143,6 +155,27 @@ class Task:
             return True
         
         return False
+
+
+
+    # Same rule as buildNextStage, but always read from the files (no cache)
+    def needsUpdate(self, _cache=None):
+        if _cache is None:
+            _cache = {}
+        if id(self) in _cache:
+            return _cache[id(self)]
+
+        self_time = self.getmtime()
+        need_update = self_time is None
+        for s in self.getSources():
+            if type(s) is Task:
+                need_update |= s.needsUpdate(_cache)
+            elif not self_time is None:
+                source_time = s.getmtime()
+                need_update |= source_time is None or source_time > self_time
+
+        _cache[id(self)] = need_update
+        return need_update
 
 
 
