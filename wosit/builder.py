@@ -1,5 +1,6 @@
 
 from wosit import Maker
+from wosit.Function import Function, Variable
 
 import argparse
 import os
