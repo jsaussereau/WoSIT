@@ -14,6 +14,7 @@ class Maker:
     __rules = None
 
     __parsed = None
+    __pattern_rules = None
 
     __current_id = None
 
@@ -22,6 +23,7 @@ class Maker:
         self.__rules = []
         self.__patterns = []
         self.__parsed = {}
+        self.__pattern_rules = {}
 
         self.__current_id = 0
 
@@ -99,7 +101,7 @@ class Maker:
                 patterns_list = self.__getTargetsList(self.__patterns)
                 if t in patterns_list:
                     raise ValueError(f"Pattern \"{t}\" is already defined.")
-                self.__patterns.append({"pattern":t, "sources":source, "command":command, "on_failure_command":on_failure_command})
+                self.__patterns.append({"pattern":t, "sources":source, "command":command, "on_failure_command":on_failure_command, "path":path, "phony":phony})
 
             else:
                 if type(command) is str:
@@ -256,7 +258,7 @@ class Maker:
                 else:
                     ofail = p.get("on_failure_command", None)
 
-                return {"target":otarget, "sources":osources, "command":ocommand, "on_failure_command":ofail}
+                return {"target":otarget, "sources":osources, "command":ocommand, "on_failure_command":ofail, "path":p.get("path", None), "phony":p.get("phony", False)}
             
         return None
     
@@ -270,11 +272,16 @@ class Maker:
             if name == r["target"]:
                 return r
 
+        # Built once from its pattern, like a rule: the same target is the same task
+        if name in self.__pattern_rules:
+            return self.__pattern_rules[name]
+
         match = self.__searchPattern(name)
         if match is None:
             return None
         
         rule = self.__resolveSymbols(match)
+        self.__pattern_rules[name] = rule
         return rule
 
 
