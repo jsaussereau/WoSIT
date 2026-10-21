@@ -8,7 +8,7 @@ python -m pip install pytest
 pytest
 ```
 
-They run on Python 3.6 and later, and take about 15 seconds.
+They run on Python 3.6 and later, and take less than a minute.
 
 ## Organization
 
