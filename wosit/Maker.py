@@ -158,8 +158,14 @@ class Maker:
 
 
     def __resolveSymbols(self, rule):
-        target = rule["target"]
-        sources = rule["sources"]
+        # The command runs in the rule's path: its symbols are written from there
+        def local(p):
+            if type(p) is str and rule.get("path") and not os.path.isabs(p):
+                return os.path.relpath(p, rule["path"])
+            return p
+
+        target = local(rule["target"])
+        sources = [local(s) for s in rule["sources"]]
         command = rule["command"]
         on_failure_command = rule.get("on_failure_command", None)
 
