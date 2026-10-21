@@ -21,6 +21,9 @@ class Maker:
 
     def __init__(self):
         self.__rules = []
+        # The rules of the plain (str) targets by target: looking a rule up by
+        # scanning them all made large builds quadratic
+        self.__rules_by_target = {}
         self.__patterns = []
         self.__parsed = {}
         self.__pattern_rules = {}
@@ -115,8 +118,7 @@ class Maker:
                 if any("%" in s for s in source):
                         raise ValueError("Can't use % placeholder in non-pattern rules.")
                 
-                targets_list = self.__getTargetsList(self.__rules)
-                if t in targets_list:
+                if self.__findRule(t) is not None:
                     raise ValueError(f"Rule \"{t}\" is already defined.")
                 
 
@@ -139,6 +141,8 @@ class Maker:
                     "phony": phony
                 })
                 self.__rules.append(rule)
+                if type(t) is str:
+                    self.__rules_by_target.setdefault(t, rule)
         
         return target
 
@@ -270,13 +274,22 @@ class Maker:
     
 
 
+    # The rule written for target `name`, or None
+    def __findRule(self, name):
+        if type(name) is str:
+            return self.__rules_by_target.get(name)
+        for r in self.__rules:
+            if name == r["target"]:
+                return r
+        return None
+
     # Returns the rule with the same name or None if it could
     # not be found and could not be constructed from a pattern.
     def __getRule(self, name):
         name = self.__normPath(name)
-        for r in self.__rules:
-            if name == r["target"]:
-                return r
+        rule = self.__findRule(name)
+        if rule is not None:
+            return rule
 
         # Built once from its pattern, like a rule: the same target is the same task
         if name in self.__pattern_rules:
