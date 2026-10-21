@@ -29,6 +29,12 @@ class Maker:
     def __epxandPath(self, path):
         return os.path.expanduser(os.path.expandvars(path))
 
+    # The same file always gets the same name: "./obj/a.o" and "obj//a.o" are "obj/a.o"
+    def __normPath(self, path):
+        if type(path) is str and path != "":
+            return os.path.normpath(path)
+        return path
+
     def __expandPaths(self, paths):
         if type(paths) is not list:
             paths = [paths]
@@ -44,7 +50,7 @@ class Maker:
                 tp.append(p)
             else:
                 tp += gp
-        paths = tp
+        paths = [self.__normPath(p) for p in tp]
 
         return paths
 
@@ -76,13 +82,13 @@ class Maker:
             tmp_target = []
             for t in target:
                 fullpath = os.path.join(path, t)
-                tmp_target.append(fullpath)
+                tmp_target.append(self.__normPath(fullpath))
 
             # Add path to sources
             tmp_source = []
             for s in source:
                 fullpath = os.path.join(path, s)
-                tmp_source.append(fullpath)
+                tmp_source.append(self.__normPath(fullpath))
 
             target = tmp_target
             source = tmp_source
@@ -258,7 +264,8 @@ class Maker:
 
     # Returns the rule with the same name or None if it could
     # not be found and could not be constructed from a pattern.
-    def __getRule(self, name): # TODO: Need to compare paths and not strings!!!!! (ex: ./obj/test.o should be equal to obj/test.o)
+    def __getRule(self, name):
+        name = self.__normPath(name)
         for r in self.__rules:
             if name == r["target"]:
                 return r
