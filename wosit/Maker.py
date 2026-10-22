@@ -9,6 +9,12 @@ from wosit.Function import Variable, Function
 
 from wosit.ProcessPool import ProcessPool
 
+
+# What each process of the pool runs. 
+def _taskExecute(task):
+    return task.execute()
+
+
 class Maker:
     __patterns = None
     __rules = None
@@ -345,11 +351,6 @@ class Maker:
 
 
 
-    # Dummy function to call in a multiprocessing Pool
-    def _taskExecute(self, task):
-        return task.execute()
-
-
 
     def getStages(self, name=None, max_process=1) -> dict:
         if type(name) is list:
@@ -411,7 +412,7 @@ class Maker:
         with ProcessPool(max_process) as p:
             res = None
             for lvl, stage in sorted(stages.items()):
-                res = p.map(self._taskExecute, stage)
+                res = p.map(_taskExecute, stage)
 
                 if any(r != 0 for r in res):
                     raise RuntimeError("The execution of a task failed.")
